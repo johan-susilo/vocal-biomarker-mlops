@@ -1,0 +1,27 @@
+name: biomarker-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Core Python
+  - python>=3.11
+  
+  # Data Manipulation & Parquet
+  - numpy>=1.26.0
+  - pandas>=2.2.0
+  - scipy>=1.12.0
+  - pyarrow>=15.0.0
+  
+  # Machine Learning & AI
+  - scikit-learn>=1.4.0
+  - xgboost>=2.0.0
+  - shap>=0.44.0
+  
+  # Visualization
+  - plotly>=5.18.0
+  
+  # Pip Fallback for specific packages
+  - pip
+  - pip:
+    - praat-parselmouth>=0.4.3
+    - pandera>=0.18.0

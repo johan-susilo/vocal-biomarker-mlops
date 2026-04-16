@@ -1,6 +1,6 @@
 # Quantifying and Correcting Hardware-Induced Data Drift in Digital Vocal Biomarkers
 
-[![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)](https://www.python.org/) 
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/) 
 ![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange)
 
 ## Overview 
