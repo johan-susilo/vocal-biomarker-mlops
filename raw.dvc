@@ -1,0 +1,14 @@
+md5: 4d6c9e45fe97c2eca987d68a1068ec4f
+frozen: true
+deps:
+- md5: 4cad7fbd9a9b5d1a6f61133ce91bf2d6.dir
+  size: 1513774566
+  nfiles: 2439
+  hash: md5
+  path: /user/leuven/386/vsc38672/SCRATCH/audio/raw
+outs:
+- md5: 4cad7fbd9a9b5d1a6f61133ce91bf2d6.dir
+  size: 1513774566
+  nfiles: 2439
+  hash: md5
+  path: raw
