@@ -1,0 +1,21 @@
+# Python environment and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+biomarker-env/
+
+# Data & Large Files (Already handled by DVC, but as a backup)
+data/raw/
+data/processed/
+
+# OS and IDE specific
+.DS_Store
+.vscode/
+.idea/
+
+# DVC local state
+.dvc/config.local
+.dvc/

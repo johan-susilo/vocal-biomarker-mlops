@@ -25,3 +25,4 @@ dependencies:
   - pip:
     - praat-parselmouth>=0.4.3
     - pandera>=0.18.0
+    - dvc>=3.67.1
