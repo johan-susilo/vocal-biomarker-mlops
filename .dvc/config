@@ -1,0 +1,8 @@
+[cache]
+    type = symlink
+    protected = true
+    dir = /user/leuven/386/vsc38672/SCRATCH/dvc_cache
+[core]
+    remote = gdrive_remote
+['remote "gdrive_remote"']
+    url = ../gdrive:1QMJ4Yk1vW6IzQasb19cQR4T_fh5FfQ89
