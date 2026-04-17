@@ -18,6 +18,9 @@ Raw Audio -> Parallel Extract -> Data Validation -> XGBoost -> SHAP
 ## Key Biological Insights (SHAP Analysis)
 SHAP analysis reveals that smartphone noise-cancellation algorithms artificially truncate F0 variability by 15%, which severely impacts perturbation measures used in neurodegenerative disease screening.
 
+## Data Setup
+To maintain a lightweight repository, raw audio files are symlinked from the HPC SCRATCH storage to data/raw/ using ln -s. The pipeline expects 2,439 .WAV files following the SXX_C_D_t_r naming convention.
+
 ## Reproducibility (How to Run)
 
 ```Bash
