@@ -8,7 +8,8 @@ env/
 biomarker-env/
 
 # Data & Large Files (Already handled by DVC, but as a backup)
-data/raw/
+data/raw/*.wav
+data/raw/*.WAV
 data/processed/
 
 # OS and IDE specific
@@ -18,7 +19,6 @@ data/processed/
 
 # DVC local state
 .dvc/config.local
-/raw
 
 /gdrive:*
 
