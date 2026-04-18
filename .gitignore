@@ -19,3 +19,8 @@ data/processed/
 # DVC local state
 .dvc/config.local
 /raw
+
+/gdrive:*
+
+# log
+/log
