@@ -7,6 +7,7 @@ import mlflow
 import mlflow.xgboost
 import optuna
 import json
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import GroupKFold
 from sklearn.metrics import mean_squared_error, r2_score
@@ -145,6 +146,26 @@ def train_debiasing_model(parquet_path: str):
   model.save_model(model_path)
   
   logger.info(f"Model natively saved to {model_path}")
+  
+  
+  
+  # extract the mathematical weights XGBoost assigned to each column
+  importances = model.feature_importances_
+  feature_names = X.columns
+  
+  fi_df = pd.DataFrame({'Feature': feature_names, 'Importance': importances})
+  fi_df = fi_df.sort_values(by='Importance', ascending=True)
+  
+  plt.figure(figsize=(10,6))
+  plt.barh(fi_df['Feature'], fi_df['Importance'], color='#00a699')
+  plt.xlabel('Relative Importance (Weight)')
+  plt.title('How the AI Corrects Smartphone Audio (Feature Importance)')
+  plt.tight_layout()
+  
+  plot_path = Path("models/feature_importance.png")
+  plt.savefig(plot_path)
+  mlflow.log_artifact(str(plot_path))
+  logger.info(f"Feature Importance chart saved to {plot_path} and logged to MLflow!")
   
   return model
 
