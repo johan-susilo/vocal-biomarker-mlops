@@ -39,7 +39,16 @@ def train_debiasing_model(parquet_path: str):
     df[col] = df[col].astype('category')
   
   # define features (X) and target (y)
-  features = ['f0_mean_noisy', 'jitter_local_noisy', 'sex', 'smartphone_model', 'task']
+  features = [
+        'f0_mean_noisy', 
+        'jitter_local_noisy', 
+        'shimmer_local_noisy', 
+        'F1_mean_noisy',
+        'F2_mean_noisy',
+        'sex', 
+        'smartphone_model', 
+        'task'
+    ]
   target = ['f0_mean_clean']
   
   # drop rows where our target or features are NaN
@@ -52,7 +61,7 @@ def train_debiasing_model(parquet_path: str):
   # mlops setup experiment
   mlflow.set_experiment("Smartphone_Hardware_Debiasing")
   
-  with mlflow.start_run(run_name="Baseline_Model"):
+  with mlflow.start_run(run_name="Feature_Engineering_v1"):
     
     # log hyperparams
     params = {
