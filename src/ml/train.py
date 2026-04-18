@@ -5,6 +5,9 @@ import warnings
 import logging
 import mlflow
 import mlflow.xgboost
+import optuna
+import json
+
 from sklearn.model_selection import GroupKFold
 from sklearn.metrics import mean_squared_error, r2_score
 from pathlib import Path
@@ -27,6 +30,7 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
 
 def train_debiasing_model(parquet_path: str):
   logger.info("Initializing ML Training Pipeline...")
@@ -61,18 +65,26 @@ def train_debiasing_model(parquet_path: str):
   # mlops setup experiment
   mlflow.set_experiment("Smartphone_Hardware_Debiasing")
   
-  with mlflow.start_run(run_name="Feature_Engineering_v1"):
+  with mlflow.start_run(run_name="Auto_Optimized_Model"):
     
-    # log hyperparams
-    params = {
-      "n_estimators": 100,
-      "learning_rate": 0.05,        # lower learning rate (learns slower and safer)
-      "max_depth": 3,               # lower depth (prevents the tree from memorizing specific voices)
-      "subsample": 0.8,             # randomize 80% of rows per tree (prevents overfitting to one student)
-      "colsample_bytree": 0.8,      # randomize 80% of features per tree
-      "enable_categorical": True,
-      "random_state": 42
-    }
+    params_file = Path("models/best_params.json")
+    
+    if params_file.exists():
+            logger.info("Found Optuna config! Loading optimized parameters...")
+            with open(params_file, "r") as f:
+                params = json.load(f)
+    else:
+      params = {
+          "n_estimators": 100,
+          "learning_rate": 0.05,        # lower learning rate (learns slower and safer)
+          "max_depth": 3,               # lower depth (prevents the tree from memorizing specific voices)
+          "subsample": 0.8,             # randomize 80% of rows per tree (prevents overfitting to one student)
+          "colsample_bytree": 0.8       # randomize 80% of features per tree
+      }
+    
+    # optuna didn't search for these
+    params["enable_categorical"] = True
+    params["random_state"] = 42
     
     mlflow.log_params(params)
     # also log the features we used so we don't forget!
