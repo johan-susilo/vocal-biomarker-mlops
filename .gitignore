@@ -24,3 +24,7 @@ data/processed/
 
 # log
 /log
+
+# mlflow
+mlruns/
+mlflow.db

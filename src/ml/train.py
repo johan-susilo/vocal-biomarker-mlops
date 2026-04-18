@@ -1,10 +1,12 @@
 import pandas as pd
 import xgboost as xgb
-from sklearn.model_selection import GroupKFold
-from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import warnings
 import logging
+import mlflow
+import mlflow.xgboost
+from sklearn.model_selection import GroupKFold
+from sklearn.metrics import mean_squared_error, r2_score
 from pathlib import Path
 
 # suppress some pandas/xgboost warnings for cleaner output
@@ -47,50 +49,71 @@ def train_debiasing_model(parquet_path: str):
   y = df_clean[target]
   groups = df_clean['student_id'] # to prevent biometric data leakage
   
-  # setup GroupKFold Cross Validation (5 folds)
-  # data points belonging to the same group must stay together
-  # important when the data contains groups of instances that are not independent of each other
-  gkf = GroupKFold(n_splits=5)
+  # mlops setup experiment
+  mlflow.set_experiment("Smartphone_Hardware_Debiasing")
   
-  # init model
+  with mlflow.start_run(run_name="Baseline_Model"):
+    
+    # log hyperparams
+    params = {
+      "n_estimators": 100,
+      "learning_rate": 0.1,
+      "max_depth": 5,
+      "enable_categorical": True,
+      "random_state": 42
+    }
+    
+    mlflow.log_params(params)
+    # also log the features we used so we don't forget!
+    mlflow.log_param("features", ", ".join(features))
   
-  model = xgb.XGBRegressor(
-    n_estimators=100,
-    learning_rate=0.1,
-    max_depth=5,
-    enable_categorical=True,
-    random_state=42
-  )
+    # setup GroupKFold Cross Validation (5 folds)
+    # data points belonging to the same group must stay together
+    # important when the data contains groups of instances that are not independent of each other
+    gkf = GroupKFold(n_splits=5)
   
-  r2_scores = []
-  rmse_scores = []
+    # init model
+    model = xgb.XGBRegressor(**params)
   
-  logger.info(f"Training on {len(X)} biological events across {df_clean['student_id'].nunique()} students...")
+    r2_scores, rmse_scores = [], []
+    logger.info(f"Training on {len(X)} biological events across {df_clean['student_id'].nunique()} students...")
   
-  # training loop
-  # idx used to track indices of the samples in the dataset
-  for fold, (train_idx, test_idx) in enumerate(gkf.split(X, y, groups)):
-    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    # training loop
+    # idx used to track indices of the samples in the dataset
+    for fold, (train_idx, test_idx) in enumerate(gkf.split(X, y, groups)):
+      X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+      y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+      # train
+      model.fit(X_train, y_train)
+
+      # predict
+      preds = model.predict(X_test)
+
+      # evaluate
+      r2 = r2_score(y_test, preds)
+      rmse = np.sqrt(mean_squared_error(y_test, preds))
+
+      r2_scores.append(r2)
+      rmse_scores.append(rmse)
+
+      mlflow.log_metric(f"fold_{fold+1}_r2", r2)
+      mlflow.log_metric(f"fold_{fold+1}_rmse", rmse)
+      
+      logger.info(f"Fold {fold+1} | R2: {r2:.3f} | RMSE: {rmse:.3f} Hz")
     
-    # train
-    model.fit(X_train, y_train)
-    
-    # predict
-    preds = model.predict(X_test)
-    
-    # evaluate
-    r2 = r2_score(y_test, preds)
-    rmse = np.sqrt(mean_squared_error(y_test, preds))
-    
-    r2_scores.append(r2)
-    rmse_scores.append(rmse)
-    
-    logger.info(f"Fold {fold+1} | R2: {r2:.3f} | RMSE: {rmse:.3f} Hz")
-    
+  avg_r2 = np.mean(r2_scores)
+  avg_rmse = np.mean(rmse_scores)
+  
   logger.info("✅ Cross-Validation Complete.")
-  logger.info(f"Average R2: {np.mean(r2_scores):.3f}")
-  logger.info(f"Average RMSE: {np.mean(rmse_scores):.3f} Hz")
+  logger.info(f"Average R2: {avg_r2:.3f}")
+  logger.info(f"Average RMSE: {avg_rmse:.3f} Hz")
+  
+  mlflow.log_metric("avg_r2", avg_r2)
+  mlflow.log_metric("avg_rmse", avg_rmse)
+  
+  mlflow.xgboost.log_model(model, "xgboost_model")
+  logger.info("Run logged successfully to MLflow!")
   
   model_dir = Path("models")
   model_dir.mkdir(parents=True, exist_ok=True)
@@ -98,7 +121,7 @@ def train_debiasing_model(parquet_path: str):
   model_path = model_dir / "xgboost_debias.json"
   model.save_model(model_path)
   
-  logger.info(f"💾 Model natively saved to {model_path}")
+  logger.info(f"Model natively saved to {model_path}")
   
   return model
 
