@@ -66,8 +66,10 @@ def train_debiasing_model(parquet_path: str):
     # log hyperparams
     params = {
       "n_estimators": 100,
-      "learning_rate": 0.1,
-      "max_depth": 5,
+      "learning_rate": 0.05,        # lower learning rate (learns slower and safer)
+      "max_depth": 3,               # lower depth (prevents the tree from memorizing specific voices)
+      "subsample": 0.8,             # randomize 80% of rows per tree (prevents overfitting to one student)
+      "colsample_bytree": 0.8,      # randomize 80% of features per tree
       "enable_categorical": True,
       "random_state": 42
     }
