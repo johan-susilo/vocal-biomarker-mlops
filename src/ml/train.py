@@ -134,6 +134,21 @@ def train_debiasing_model(parquet_path: str):
   
   logger.info(f"Model natively saved to {model_path}")
   
+  # generate evaluation plots and log to MLflow
+  logger.info("Generating evaluation plots for MLflow...")
+  from evaluate import generate_evaluation_plots
+
+  # use the last X_test, y_test from the K-fold for a quick plot,
+  # or evaluate on the whole training set for presentation purposes
+  scatter, residuals, improvement = generate_evaluation_plots(model, X, y, plot_dir="output/plots")
+
+  mlflow.log_artifact(scatter, "evaluation_plots")
+  mlflow.log_artifact(residuals, "evaluation_plots")
+  if improvement:
+    mlflow.log_artifact(improvement, "evaluation_plots")
+
+  logger.info("Evaluation plots saved and logged as artifacts.")
+
   return model
 
 if __name__ == "__main__":
