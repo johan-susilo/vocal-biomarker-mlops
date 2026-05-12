@@ -9,11 +9,19 @@ In digital health, acoustic Machine Learning models trained on clinical-grade mi
 ## Architecture & Pipeline
 Raw Audio -> Parallel Extract -> Data Validation -> XGBoost -> SHAP
 
-- ETL Engine: Implemented asynchronous/multiprocessing I/O to process 2,400+ .WAV files, reducing extraction time by X%.
+The codebase is organized into distinct functional modules:
 
-- Data Quality: Enforced strict schema validation using [Pandera/Pydantic] to prevent silent pipeline failures.
+- **ETL Engine (`src/etl/`)**:
+  - `extract.py`: Implements asynchronous/multiprocessing I/O to parse clinical and noisy .WAV files and extract Praat acoustic features.
+  - `transform.py`: Cleans demographic metadata and aligns the noisy (input) vs clean (target) biological events into a machine learning dataset.
+  - `validate.py`: Enforces strict schema validation using Pandera/Pydantic to prevent silent pipeline failures.
 
-- ML De-biasing: Built a multi-output regression model using GroupKFold cross-validation (grouped by Participant ID) to prevent biometric data leakage.
+- **ML De-biasing (`src/ml/`)**:
+  - `train.py`: Builds a multi-output regression model using GroupKFold cross-validation (grouped by Participant ID) to prevent biometric data leakage. Logs hyper-parameters and models to **MLflow**.
+  - `evaluate.py`: Automatically generates and logs visual presentations of model performance, including Actual vs Predicted scatter plots, Residual distributions, and direct improvement comparisons.
+
+- **Presentation & Insights (`notebooks/`)**:
+  - `01_shap_drift_analysis.ipynb`: A presentation-ready Jupyter Notebook that computes SHAP values to explain feature importance and visually demonstrates the hardware-induced drift.
 
 ## Key Biological Insights (SHAP Analysis)
 SHAP analysis reveals that smartphone noise-cancellation algorithms artificially truncate F0 variability by 15%, which severely impacts perturbation measures used in neurodegenerative disease screening.
@@ -23,16 +31,26 @@ To maintain a lightweight repository, raw audio files are symlinked from the HPC
 
 ## Reproducibility (How to Run)
 
+Ensure you have your environment set up (via Conda `environment.yml` or Docker). You must have the raw `.WAV` data in `data/raw/` and `participants.csv` available.
+
 ```Bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/YourName/vocal-biomarker-pipeline.git
 
-# Build the Docker container (Includes Praat dependencies)
-docker compose up --build
-
-# Run the automated ETL and Training pipeline
+# 2. Run the automated ETL, Training, and Evaluation pipeline
+# This will extract features, align data, train XGBoost, and generate evaluation plots.
 make run-pipeline
+
+# 3. View the evaluation plots and ML tracking
+# Open http://localhost:5000 in your browser to view the MLflow dashboard
+make mlflow
+
+# 4. Explore the SHAP Drift Analysis Presentation
+# Opens the interactive Jupyter notebook to view hardware truncation analysis
+make notebook
 ```
+Evaluation artifacts (scatter plots, residual distributions) will also be directly available in the `output/plots/` directory after running the pipeline.
+
 ## Tech Stack
 Bioinformatics: Praat, Parselmouth-Python
 

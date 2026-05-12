@@ -28,5 +28,3 @@ data/processed/
 # mlflow
 mlruns/
 mlflow.db
-catboost_info
-models_old

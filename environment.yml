@@ -16,9 +16,7 @@ dependencies:
   - scikit-learn>=1.4.0
   - xgboost>=2.0.0
   - shap>=0.44.0
-  - mlflow>=3.11.1
-  - optuna>=4.8.0
-  - catboost>=1.2.10
+  - mlflow
   
   # Visualization
   - plotly>=5.18.0

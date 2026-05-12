@@ -53,14 +53,12 @@ def create_ml_dataset(features_path: str, demo_path: str, output_path: str):
   # split into Target (y) and Input (X)
   df_clean = df_full[(df_full['device'] == 'A') & (df_full['condition'] == 'Q')].copy()
   df_noisy = df_full[(df_full['device'].isin(['B', 'C'])) & (df_full['condition'] == 'N')].copy()
-  df_noisy.loc[df_noisy['device'] == 'B', 'smartphone_model'] = 'SAMSUNG A34'
-  
   
   logger.info(f"Target (Clean RODE) rows: {len(df_clean)}")
   logger.info(f"Input (Noisy Phone) rows: {len(df_noisy)}")
   
   # composite keys
-  merge_keys = ['student_id', 'task', 'repetition', 'age', 'sex']
+  merge_keys = ['student_id', 'task', 'repetition', 'age', 'sex', 'smartphone_model']
   
   # merge them to align biological events
   df_ml = pd.merge(
@@ -69,9 +67,6 @@ def create_ml_dataset(features_path: str, demo_path: str, output_path: str):
     on = merge_keys, 
     suffixes = ('_noisy', '_clean')
   )
-  
-  # the residual error
-  df_ml['target_f0_delta'] = df_ml['f0_mean_clean'] - df_ml['f0_mean_noisy']
   
   # save the final ML-ready dataset
   Path(output_path).parent.mkdir(parents=True, exist_ok=True)
